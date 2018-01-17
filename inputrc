@@ -1,0 +1,9 @@
+# Force Vi Mode
+set editing-mode vi
+
+# Set bell style
+set bell-style visible
+
+# Enable command-line search with arrow keys
+"\e[A": history-search-backward
+"\e[B": history-search-forward

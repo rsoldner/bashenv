@@ -1,0 +1,165 @@
+#!/bin/bash
+
+#
+# attach
+#
+function attach() {
+    tmux attach -t $1
+}
+
+#
+# calc -- mathIsFun
+#
+function calc () {
+    bc -l <<< "$@"
+}
+
+#
+# cdd
+# This function will find the directory of the arguments given
+# and cd to it. (in case of multiple, go to shortest path)
+#
+function cdd() {
+    min=50
+    index=0
+    unset matching_paths
+
+    while read line; do
+        depth=$(echo "-- [$line]" | tr -cd "/" | wc -c)
+        if [ $depth -lt $min ]; then
+            min=$depth
+            new_path=$line
+        fi
+        # Add this path to the matching paths
+        matching_paths=("${matching_paths[@]}" "$line")
+    done < <(find . -type d -name "$1*")
+
+    # Print all matching paths if there was more than 1
+    if [ "${#matching_paths[@]}" -gt 1 ]; then
+        echo "Number of matches: ${#matching_paths[@]}"
+        count=1
+        for p in "${matching_paths[@]}"
+        do
+            echo "[$count] $p"
+            ((count=count+1))
+        done
+        unset count
+    fi
+
+    if [ "${#matching_paths[@]}" -ne 0 ]; then
+        cd $new_path
+    else
+        echo 'No Matches'
+    fi
+}
+
+# Using the history of the cdd, this function will
+# cd to a directory based off the index in the array
+function cdc() {
+    CLIENT=`pwd 2>/dev/null | sed -e 's|.*/p4/\([^/]*\).*|\1|'`
+    ROOT=`pwd 2>/dev/null | sed -e 's|\(.*/p4\)[^/]*.*|\1|'`
+
+    if ! [[ "$1" =~ ^[0-9]+$ ]]; then
+        echo "error: Argument is not a number"
+        exit 1
+    fi
+
+    ((offset=$1-1))
+
+    if [ "${#matching_paths[@]}" -gt 1 ]; then
+        if [ "${#matching_paths[@]}" -gt "$offset" ]; then
+            echo "$ROOT/$CLIENT/${matching_paths[$offset]}"
+            cd "$ROOT/$CLIENT/${matching_paths[$offset]}"
+        else
+            echo "Error: Invalid array number"
+        fi
+    else
+        echo "Error: matching_paths is not an array"
+        exit 1
+    fi
+}
+
+# fns -- Shows all functions defined in bash_profile
+function fns() {
+    grep "^function .*()" $FUNCTIONS
+}
+
+#
+# From Unix
+#
+function from_unix() {
+    date -d @$1
+}
+
+#
+# Knock Knock Neo
+#
+function knock() {
+    ssh -oStrictHostKeyChecking=no -oCheckHostIP=no $1 "echo -e \"$2\n\" | sudo wall"
+}
+
+#
+# Log Week
+#
+function week() {
+    echo -e "week`date +%V`"
+    #cd /x/eng/ctl_logs/pushbutton/"week`date +%V`"
+}
+
+#
+# cur
+#
+function mkcur() {
+    #CLIENT=`pwd 2>/dev/null | sed -e 's|.*/p4/\([^/]*\).*|\1|'`
+    #ROOT=`pwd 2>/dev/null | sed -e 's|\(.*/p4\)[^/]*.*|\1|'`
+
+    #echo "Exporting CURRENT=$ROOT/$CLIENT"
+    #export CURRENT=$ROOT/$CLIENT
+    export CURRENT=`pwd`
+    source ~/.bash_profile
+}
+
+
+#
+# sedwrap
+# TODO Usage
+#
+function sedwrap() {
+    sed $1 <$2 >$2.new
+    mv $2.new $2
+}
+
+#
+# wait_for_server
+# Ping the server every second until it responds
+#
+function wait_for_server()
+{
+    SERVER=$1
+    if [ -z $SERVER ]
+    then
+        echo "must pass server name"
+        return 1
+    fi
+
+    echo "Waiting for $SERVER..."
+    RC=1
+
+    while [ $RC -ne 0 ]
+    do
+        ping -c 1 $SERVER >/dev/null
+        RC=$?
+        sleep 1
+    done
+    echo "Ready!"
+
+}
+
+#
+# psg
+# runs ps aux and allows you to grep the output
+#
+psg()
+{
+    ps aux | /bin/grep -v 'grep' | /bin/grep "^USER\|$@"
+}
