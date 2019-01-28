@@ -1,8 +1,24 @@
+" DISABLE ARROW KEYS (breaking the bad habits)
+noremap <Up>    :echom 'You have no power here! --Theoden https://www.youtube.com/watch?v=fBGWtVOKTkM'<CR>
+noremap <Down>  :echom 'I am looking forward to completing your training. In time you will call *me* master. --Emperor Palpatine'<CR>
+noremap <Left>  :echom 'Never send a human to do a machines job. --Agent Smith'<CR>
+noremap <Right> :echom 'The cake is a lie! --portal'<CR>
+
+" Highlight text in Visual mode then type // to search for it
+vnoremap // y/<C-R>"<CR>
+
+
 " Use Vim settings, rather than Vi settings
 set nocompatible
 
 " Allow backspacing over everything in insert mode
 set backspace=indent,eol,start
+
+" Do not keep a backup file, they just clutter the file system
+set nobackup
+
+" Turn on hidden buffers
+set hidden
 
 " Keep 50 lines of command line history
 set history=50
@@ -19,11 +35,18 @@ set incsearch
 " Turn on autoindenting
 set autoindent
 
-" Turn on hidden buffers
-set hidden
+" Displays list when using autocomplete in command menu
+set wildmenu
+
+" Redraw only when needed (speeds up macros)
+set lazyredraw
+
+" Remove octal from Ctrl-A
+set nrformats=hex
 
 " Don't use Ex mode, use Q for formatting
 map Q gq
+
 
 " CTRL-U in insert mode deletes a lot.  Use CTRL-G u to first break undo, so that you can undo CTRL-U after inserting a line break
 inoremap <C-U> <C-G>u<C-U>
@@ -36,8 +59,10 @@ endif
 
 " Only do this part when compiled with support for autocommands
 if has('autocmd')
+
     " Enable file type detection
     filetype plugin indent on
+
     " When editing a file, always jump to the last known cursor position
     autocmd BufReadPost *
         \ if line("'\"") > 1 && line("'\"") <= line("$") |
@@ -49,8 +74,16 @@ endif
 if !exists(':DiffOrig')
     command DiffOrig vert new | set bt=nofile | r # | 0d_ | diffthis | wincmd p | diffthis
 endif
+
+" Change the color schema when using vimdiff
 if( &diff )
     colorscheme vividchalk
+
+    " Move the cursor to the first change
+    if has('autocmd')
+        autocmd VimEnter * execute "normal gg"
+        autocmd VimEnter * execute "normal ]c"
+    endif
 endif
 
 " Set tab behavior
@@ -58,42 +91,122 @@ set tabstop=4
 set expandtab
 set shiftwidth=4
 
-" Highlight trailing whitespace
-highlight ExtraWhitespace ctermbg=2;
-highlight OutputStatements ctermbg=3;
-highlight DiffText      ctermbg=DarkRed
-highlight DiffText      cterm=bold ctermbg=52 gui=bold guibg=Red
+" override tab setting for javascript and html files
+" Decided to keep 4 spaces as indent (2018-08-13)
+"autocmd BufRead,BufNewFile  *.js,*.html,*/view/*.php,*.htm, set ts=2 sw=2
+autocmd BufRead,BufNewFile  *.vue set syntax=html
 
-" Highlight lines longer than 131 characters
-"let w:em=matchadd('ErrorMsg', '\%>130v.\+')
-match ErrorMsg '\%>130v.\+'
+
+" Highlight trailing whitespace
+highlight ExtraWhitespace  ctermbg=2;
+highlight TurquoiseMatch   ctermbg=45;
+highlight DiffText         ctermbg=DarkRed
+highlight DiffText         cterm=bold ctermbg=52 gui=bold guibg=Red
+
+" Highlight long lines
+match ErrorMsg '\%>120v.\+'
 2match ExtraWhiteSpace '\s\+$'
-"3match OutputStatements '/^\s*var_dump\|^\s*echo\|^\s*printf'
+
 
 
 " Custom commands
-command Fname execute 'g/private\sfunction\|public\sfunction'
-command E let w:em=matchadd('ErrorMsg', '\%>130v.\+')
-command E2 match ErrorMsg '\%>90v.\+'
-command NE match ErrorMsg '\%>5000v.\+'
-command NE2 matchdelete(em)
-command O 3match OutputStatements '/^\s*var_dump\|^\s*echo\|^\s*printf'
-command NO 3match none
+command PERL set syntax=perl
+command FN execute 'g/private\sfunction\|public\sfunction'
 command OO execute '/^\s*var_dump\|^\s*echo\|^\s*printf'
-command H 2match ExtraWhiteSpace '\s\+$'
-command NH 2match none
 command HH execute '/\s\+$'
 command MTD execute '/[a-z]\s(\|INFO\|TODO\|[a-z]([^ ^)]\|[^ ^(])'
-command I set ignorecase
-command NI set noignorecase
-command K set list
-command NK set nolist
-command L set number
-command NL set nonumber
-command S set spell spelllang=en_us
-command NS set nospell
 command V set nowrap | match none | 2match none
-command D set background=dark
+
+function! HTML()
+    set syntax=html
+    set noautoindent
+    set tabstop=2
+    set expandtab
+    set shiftwidth=2
+endfunction
+
+command HTML call HTML()
+
+" Highlight trailing whitespace
+" And command to enable/disable
+highlight ExtraWhiteSpace ctermbg=2;
+2match ExtraWhiteSpace '\s\+$'
+command H
+    \ let match = matcharg(2) |
+    \ if match[1] == '\s\+$' |
+    \   2match none |
+    \ else |
+    \   2match ExtraWhiteSpace '\s\+$' |
+    \ endif
+
+" Background toggle
+command D
+    \ if &background == 'dark' |
+    \     set background=light |
+    \ else |
+    \     set background=dark |
+    \ endif
+
+" Long Line Highlight toggle
+command E
+    \ let match = matcharg(1) |
+    \ if match[1] == '\%>120v.\+' |
+    \     match none |
+    \ else |
+    \     match ErrorMsg '\%>120v.\+' |
+    \ endif
+
+"Mouse Control
+command M
+    \ if &mouse == 'a' |
+    \     set mouse-=a |
+    \ else |
+    \     if has('mouse') |
+    \         set mouse=a |
+    \     endif |
+    \ endif
+
+" Ignore Case toggle
+command I
+    \ if &ignorecase |
+    \     set noignorecase |
+    \ else |
+    \     set ignorecase |
+    \ endif
+
+" List toggle
+command K
+    \ if &list |
+    \     set nolist |
+    \ else |
+    \     set list |
+    \ endif
+
+" Number toggle
+command L
+    \ if &number |
+    \     set nonumber |
+    \ else |
+    \     set number |
+    \ endif
+
+" Spell Check toggle
+command S
+    \ if &spell |
+    \     set nospell |
+    \ else |
+    \     set spell spelllang=en_us |
+    \ endif
+
+" Spell Check toggle
+command R
+    \ if &rnu |
+    \     set nornu |
+    \ else |
+    \     set rnu |
+    \ endif
+
+" Color commands
 command DE execute 'colorscheme default'
 command VC execute 'colorscheme vividchalk'
 command TW execute 'colorscheme twilight'
@@ -116,4 +229,5 @@ command Remove echo delete(@%) | q!
 " Set filetypes
 au BufNewFile,BufRead *.mode set filetype=perl
 au BufNewFile,BufRead *.ctl set filetype=perl
-
+au BufNewFile,BufRead *.thpl set filetype=perl
+au BufNewFile,BufRead *.t set syntax=perl
