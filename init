@@ -1,0 +1,5 @@
+
+ln -s $HOME/bashenv/profile .profile
+ln -s $HOME/bashenv/input.rc .input.rc
+ln -s $HOME/bashenv/tmux.conf .tmux.conf
+ln -s $HOME/bashenv/vimrc .vimrc
