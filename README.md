@@ -2,15 +2,14 @@
 
 Source control for my terminal environment.
 
-To clone this project:
+To clone this project and setup the environment
 
-$ cd $HOME
-$ git clone https://github.com/rsoldner/bashenv.git
+* NOTE: the init script will not remove files if they already exist (example .profile)
+```
+cd $HOME
+git clone https://github.com/rsoldner/bashenv.git
+./bashenv/init
+```
 
-As of now, you need to create the symlinks manually..
-TODO -- move this to an init.sh script.
 
-ln -s $HOME/bashenv/profile .profile
-ln -s $HOME/bashenv/input.rc .input.rc
-ln -s $HOME/bashenv/tmux.conf .tmux.conf
-ln -s $HOME/bashenv/vimrc .vimrc
+
