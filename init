@@ -1,5 +1,15 @@
 
-ln -s $HOME/bashenv/profile .profile
-ln -s $HOME/bashenv/input.rc .input.rc
-ln -s $HOME/bashenv/tmux.conf .tmux.conf
-ln -s $HOME/bashenv/vimrc .vimrc
+BASHENV_PATH=$1
+if [ -z $BASHENV_PATH ]
+then
+    echo "Must supply the path to the bashenv git repo"
+    exit 1
+fi
+
+set -x
+ln -s $BASHENV_PATH $HOME/.bashenv
+
+ln -s $HOME/.bashenv/profile .profile
+ln -s $HOME/.bashenv/inputrc .input.rc
+ln -s $HOME/.bashenv/tmux.conf .tmux.conf
+ln -s $HOME/.bashenv/vimrc .vimrc

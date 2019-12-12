@@ -1,4 +1,4 @@
-export PROFILE_DIR=$HOME/bashenv
+export PROFILE_DIR=$HOME/.bashenv
 
 # Load environment specific functions
 export FUNCTIONS="$PROFILE_DIR/functions"
